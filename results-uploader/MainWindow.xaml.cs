@@ -212,6 +212,7 @@ namespace results_uploader
             }
             else if (uid != "-1")
             {
+                slug = uid;
                 UpdateYears(null);
             }
         }
