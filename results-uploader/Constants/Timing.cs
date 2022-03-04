@@ -6,12 +6,12 @@ namespace results_uploader.Constants
     public class Timing
     {
         // These values are what are sent in the API Result and indicate the type of the result.
-        public const int DISTANCE_TYPE_NORMAL = 0;
-        public const int DISTANCE_TYPE_EARLY = 11;
-        public const int DISTANCE_TYPE_UNOFFICIAL = 12;
-        public const int DISTANCE_TYPE_VIRTUAL = 13;
-        public const int API_TYPE_DNF = 23;
-        public const int API_TYPE_DNS = 24;
+        public const int RESULT_TYPE_NORMAL = 0;
+        public const int RESULT_TYPE_EARLY = 11;
+        public const int RESULT_TYPE_UNOFFICIAL = 12;
+        public const int RESULT_TYPE_VIRTUAL = 13;
+        public const int RESULT_TYPE_DNF = 23;
+        public const int RESULT_TYPE_DNS = 24;
 
         // API Upload Count
         public const int API_LOOP_COUNT = 20;

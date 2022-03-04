@@ -1,0 +1,31 @@
+﻿<Window x:Class="results_uploader.UI.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:results_uploader.UI"
+        mc:Ignorable="d"
+        Title="Import" Height="400" Width="400" Closing="Window_Closing">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" x:Name="SheetRow" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="45" />
+        </Grid.RowDefinitions>
+        <DockPanel HorizontalAlignment="Center">
+            <Label Content="Sheet: " VerticalAlignment="Center" />
+            <ComboBox x:Name="SheetsBox" Height="25" Width="200" VerticalAlignment="Center" SelectionChanged="SheetsBox_SelectionChanged" TabIndex="1" Grid.Row="0" />
+        </DockPanel>
+        <ListBox x:Name="headerListBox" KeyboardNavigation.TabNavigation="Continue" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+        </ListBox>
+        <DockPanel Grid.Row="2" VerticalAlignment="Center" Width="210">
+            <Button Content="Import" Name="Import" Click="Import_Click" Width="100" Height="25" VerticalAlignment="Center" Margin="0 0 5 0"/>
+            <Button Content="Cancel" Name="Cancel" Click="Cancel_Click" Width="100" Height="25" VerticalAlignment="Center" Margin="5 0 0 0" />
+        </DockPanel>
+    </Grid>
+</Window>

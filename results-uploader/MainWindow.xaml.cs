@@ -1,4 +1,7 @@
-﻿using results_uploader.Network.API;
+﻿using Microsoft.Win32;
+using results_uploader.Interfaces.IO;
+using results_uploader.IO;
+using results_uploader.Network.API;
 using results_uploader.Objects;
 using results_uploader.Objects.API;
 using results_uploader.Objects.Helpers;
@@ -27,17 +30,19 @@ namespace results_uploader
     public partial class MainWindow : Window
     {
         private static List<ResultsAPI> aPIs = new List<ResultsAPI>();
-        private ResultsAPI? api = null;
-        private string? slug = null;
-        private string? year = null;
+        private ResultsAPI api = null;
+        private string slug = null;
+        private string year = null;
 
-        private APIWindow? apiWindow;
-        private EventYearWindow? eventYearWindow;
+        private APIWindow apiWindow;
+        private EventYearWindow eventYearWindow;
+        private ImportWindow importWindow;
 
         private const string apiPath = ".\\readers.txt";
         
-        private GetEventsResponse? events;
-        private GetEventYearsResponse? eventYears;
+        private GetEventsResponse events;
+        private GetEventYearsResponse eventYears;
+        private List<APIResult> results = new List<APIResult>();
 
         public MainWindow()
         {
@@ -46,19 +51,21 @@ namespace results_uploader
             {
                 if (File.Exists(apiPath))
                 {
-                    using StreamReader sr = new(apiPath);
-                    while (sr.Peek() >= 0)
+                    using (StreamReader sr = new StreamReader(apiPath))
                     {
-                        string? reader = sr.ReadLine();
-                        if (reader != null)
+                        while (sr.Peek() >= 0)
                         {
-                            string[] parts = reader.Split(',');
-                            if (parts.Length == 4)
+                            string reader = sr.ReadLine();
+                            if (reader != null)
                             {
-                                aPIs.Add(new ResultsAPI(parts[0], parts[1], parts[2], parts[3]));
+                                string[] parts = reader.Split(',');
+                                if (parts.Length == 4)
+                                {
+                                    aPIs.Add(new ResultsAPI(parts[0], parts[1], parts[2], parts[3]));
+                                }
                             }
                         }
-                    }
+                    };
                 }
             }
             catch (Exception ex)
@@ -190,16 +197,47 @@ namespace results_uploader
 
         private void ChooseFile_Click(object sender, RoutedEventArgs e)
         {
+            Log.D("MainWindow", "Choose file clicked.");
+            OpenFileDialog bib_dialog = new OpenFileDialog() { Filter = "CSV Files (*.csv,*.txt)|*.csv;*.txt|All files|*" };
+            if (bib_dialog.ShowDialog() == true)
+            {
+                IDataImporter importer = new CSVImporter(bib_dialog.FileName);
+                importer.FetchHeaders();
+                importWindow = new ImportWindow(importer, this);
+                importWindow.Show();
+            }
+        }
 
+        public void ImportFinalize(List<APIResult> results)
+        {
+            Log.D("Main Window", "Import finalized. Results count: " + results.Count);
+            this.results = results;
+            updateListView.ItemsSource = this.results;
+            importWindow = null;
+            if (this.results.Count > 0)
+            {
+                updateScrollView.Visibility = Visibility.Visible;
+                Upload.Visibility = Visibility.Visible;
+                WindowFrame.Height = 490;
+            }
         }
 
         private void Upload_Click(object sender, RoutedEventArgs e)
         {
-
+            Log.D("MainWindow", "Upload clicked.");
+            if (results.Count > 0)
+            {
+                // do stuff
+            }
+            else
+            {
+                
+            }
         }
 
         private void EventBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Log.D("MainWindow", "Event changed.");
             if (EventBox.SelectedItem == null)
             {
                 return;
@@ -219,6 +257,7 @@ namespace results_uploader
 
         private void YearBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Log.D("MainWindow", "Year changed.");
             if (YearBox.SelectedItem == null)
             {
                 return;
@@ -231,7 +270,7 @@ namespace results_uploader
             }
         }
 
-        private async void UpdateYears(string? year)
+        private async void UpdateYears(string year)
         {
             if (api == null)
             {
@@ -281,7 +320,7 @@ namespace results_uploader
             YearBox.SelectedIndex = ix;
         }
 
-        private async void UpdateEvents(string? slug)
+        private async void UpdateEvents(string slug)
         {
             if (api == null)
             {
@@ -333,6 +372,8 @@ namespace results_uploader
 
         private void APIBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Console.WriteLine("API clicked...");
+            Log.D("MainWindow", "API changed.");
             if (APIBox.SelectedItem == null)
             {
                 return;
@@ -354,11 +395,13 @@ namespace results_uploader
         {
             try
             {
-                using StreamWriter sw = new(apiPath, false);
-                foreach (ResultsAPI api in aPIs)
+                using (StreamWriter sw = new StreamWriter(apiPath, false))
                 {
-                    sw.WriteLine(string.Format("{0},{1},{2},{3}", api.Type, api.URL, api.Nickname, api.AuthToken));
-                }
+                    foreach (ResultsAPI api in aPIs)
+                    {
+                        sw.WriteLine(string.Format("{0},{1},{2},{3}", api.Type, api.URL, api.Nickname, api.AuthToken));
+                    }
+                };
             }
             catch (Exception ex)
             {

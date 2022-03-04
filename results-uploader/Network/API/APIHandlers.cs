@@ -1,13 +1,14 @@
-﻿using results_uploader.Objects.API;
-using results_uploader.Objects;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using results_uploader.Objects.API;
+using results_uploader.Objects;
 using results_uploader.Objects.Helpers;
-using System.Text.Json;
 
 namespace results_uploader.Network.API
 {
@@ -41,21 +42,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        GetEventsResponse? result = JsonSerializer.Deserialize<GetEventsResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing event response");
-                        }
+                        var result = JsonConvert.DeserializeObject<GetEventsResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)
@@ -79,7 +72,7 @@ namespace results_uploader.Network.API
                         Method = HttpMethod.Post,
                         RequestUri = new Uri(api.URL + "event-year/event"),
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new GetEventRequest
+                            JsonConvert.SerializeObject(new GetEventRequest
                             {
                                 Slug = slug
                             }),
@@ -93,21 +86,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        GetEventYearsResponse? result = JsonSerializer.Deserialize<GetEventYearsResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing event years response");
-                        }
+                        var result = JsonConvert.DeserializeObject<GetEventYearsResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)
@@ -131,7 +116,7 @@ namespace results_uploader.Network.API
                         Method = HttpMethod.Post,
                         RequestUri = new Uri(api.URL + "event/add"),
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new ModifyEventRequest
+                            JsonConvert.SerializeObject(new ModifyEventRequest
                             {
                                 Event = ev
                             }),
@@ -145,21 +130,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        ModifyEventResponse? result = JsonSerializer.Deserialize<ModifyEventResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing modify event response");
-                        }
+                        var result = JsonConvert.DeserializeObject<ModifyEventResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)
@@ -183,7 +160,7 @@ namespace results_uploader.Network.API
                         Method = HttpMethod.Post,
                         RequestUri = new Uri(api.URL + "event-year/add"),
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new ModifyEventYearRequest
+                            JsonConvert.SerializeObject(new ModifyEventYearRequest
                             {
                                 Slug = slug,
                                 Year = year
@@ -198,21 +175,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        EventYearResponse? result = JsonSerializer.Deserialize<EventYearResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing event year response");
-                        }
+                        var result = JsonConvert.DeserializeObject<EventYearResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)
@@ -236,7 +205,7 @@ namespace results_uploader.Network.API
                         Method = HttpMethod.Post,
                         RequestUri = new Uri(api.URL + "results/add"),
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new AddResultsRequest
+                            JsonConvert.SerializeObject(new AddResultsRequest
                             {
                                 Slug = slug,
                                 Year = year,
@@ -252,21 +221,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        AddResultsResponse? result = JsonSerializer.Deserialize<AddResultsResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing add results response");
-                        }
+                        var result = JsonConvert.DeserializeObject<AddResultsResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)
@@ -290,7 +251,7 @@ namespace results_uploader.Network.API
                         Method = HttpMethod.Delete,
                         RequestUri = new Uri(api.URL + "results/delete"),
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new GetResultsRequest
+                            JsonConvert.SerializeObject(new GetResultsRequest
                             {
                                 Slug = slug,
                                 Year = year
@@ -305,21 +266,13 @@ namespace results_uploader.Network.API
                     {
                         Log.D("Network.API.APIHandlers", "Status code ok.");
                         var json = await response.Content.ReadAsStringAsync();
-                        AddResultsResponse? result = JsonSerializer.Deserialize<AddResultsResponse>(json);
-                        if (result == null)
-                        {
-                            throw new APIException("error deserializing add results response");
-                        }
+                        var result = JsonConvert.DeserializeObject<AddResultsResponse>(json);
                         return result;
                     }
                     Log.D("Network.API.APIHandlers", "Status code not ok.");
                     var errjson = await response.Content.ReadAsStringAsync();
-                    ErrorResponse? errresult = JsonSerializer.Deserialize<ErrorResponse>(errjson);
-                    if (errresult == null)
-                    {
-                        throw new APIException("error deserializing error response");
-                    }
-                    content = errresult.Message == null ? "error message null" : errresult.Message;
+                    var errresult = JsonConvert.DeserializeObject<ErrorResponse>(errjson);
+                    content = errresult.Message;
                 }
             }
             catch (Exception ex)

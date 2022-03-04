@@ -1,22 +1,22 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace results_uploader.Objects.API
 {
     public class APIEvent
     {
-        [JsonPropertyName("name")]
-        public string? Name { get; set; }
-        [JsonPropertyName("slug")]
-        public string? Slug { get; set; }
-        [JsonPropertyName("website")]
-        public string? Website { get; set; }
-        [JsonPropertyName("image")]
-        public string? Image { get; set; }
-        [JsonPropertyName("contact_email")]
-        public string? ContactEmail { get; set; }
-        [JsonPropertyName("access_restricted")]
-        public bool? AccessRestricted { get; set; }
-        [JsonPropertyName("type")]
-        public string? Type { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("slug")]
+        public string Slug { get; set; }
+        [JsonProperty("website")]
+        public string Website { get; set; }
+        [JsonProperty("image")]
+        public string Image { get; set; }
+        [JsonProperty("contact_email")]
+        public string ContactEmail { get; set; }
+        [JsonProperty("access_restricted")]
+        public bool AccessRestricted { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
     }
 }

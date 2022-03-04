@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:results_uploader"
         mc:Ignorable="d"
-        Title="Chronokeep Uploader" Height="130" Width="450" ResizeMode="NoResize" Closing="Window_Closing" Name="WindowFrame">
+        Title="Chronokeep Uploader" Height="130" Width="600" ResizeMode="NoResize" Closing="Window_Closing" Name="WindowFrame">
     <StackPanel>
         <StackPanel>
             <Label Content="Select API" Width="auto" HorizontalAlignment="Center" FontSize="16" />
@@ -21,21 +21,21 @@
             <ComboBox Name="YearBox" HorizontalAlignment="Center" Width="200" Margin="0 0 0 5" SelectionChanged="YearBox_SelectionChanged"/>
             <Button Name="ChooseFile" Content="Choose File" Width="100" HorizontalAlignment="Center" Margin="0 0 0 5" Click="ChooseFile_Click"/>
         </StackPanel>
-        <ScrollViewer Name="updateScrollView" Width="auto" Margin="0 0 0 0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Visibility="Collapsed">
+        <ScrollViewer Name="updateScrollView" Width="auto" Margin="0 0 0 0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
             <ListView x:Name="updateListView" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" Height="210" SelectionMode="Extended" Grid.Row="0" FontSize="12">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Pl" Width="25" DisplayMemberBinding="{Binding Ranking}" />
                         <GridViewColumn Header="GPl" Width="25" DisplayMemberBinding="{Binding GenderRanking}" />
                         <GridViewColumn Header="APl" Width="25" DisplayMemberBinding="{Binding AgeRanking}" />
-                        <GridViewColumn Header="Distance" Width="60" DisplayMemberBinding="{Binding Distance}" />
-                        <GridViewColumn Header="Bib" Width="60" DisplayMemberBinding="{Binding Bib}" />
+                        <GridViewColumn Header="Dist" Width="40" DisplayMemberBinding="{Binding Distance}" />
+                        <GridViewColumn Header="Bib" Width="40" DisplayMemberBinding="{Binding Bib}" />
                         <GridViewColumn Header="First" Width="60" DisplayMemberBinding="{Binding First}" />
-                        <GridViewColumn Header="Last" Width="80" DisplayMemberBinding="{Binding Last}" />
-                        <GridViewColumn Header="Age" Width="40" DisplayMemberBinding="{Binding Age}" />
-                        <GridViewColumn Header="Sex" Width="40" DisplayMemberBinding="{Binding Gender}" />
-                        <GridViewColumn Header="Chip Time" Width="100" DisplayMemberBinding="{Binding TimeString}" />
-                        <GridViewColumn Header="Time" Width="100" DisplayMemberBinding="{Binding Time}" />
+                        <GridViewColumn Header="Last" Width="75" DisplayMemberBinding="{Binding Last}" />
+                        <GridViewColumn Header="Age" Width="30" DisplayMemberBinding="{Binding Age}" />
+                        <GridViewColumn Header="Sex" Width="30" DisplayMemberBinding="{Binding Gender}" />
+                        <GridViewColumn Header="Chip Time" Width="70" DisplayMemberBinding="{Binding ChipTimeString}" />
+                        <GridViewColumn Header="Time" Width="70" DisplayMemberBinding="{Binding TimeString}" />
                         <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding TypeName}" />
                     </GridView>
                 </ListView.View>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace results_uploader.Objects.API
 {
@@ -31,64 +30,73 @@ namespace results_uploader.Objects.API
             this.Milliseconds = milliseconds;
         }
 
-        [JsonPropertyName("bib")]
-        public string? Bib { get; set; }
-        [JsonPropertyName("first")]
-        public string? First { get; set; }
-        [JsonPropertyName("last")]
-        public string? Last { get; set; }
-        [JsonPropertyName("age")]
-        public int? Age { get; set; }
-        [JsonPropertyName("gender")]
-        public string? Gender { get; set; }
-        [JsonPropertyName("age_group")]
-        public string? AgeGroup { get; set; }
-        [JsonPropertyName("distance")]
-        public string? Distance { get; set; }
-        [JsonPropertyName("seconds")]
+        [JsonProperty("bib")]
+        public string Bib { get; set; }
+        [JsonProperty("first")]
+        public string First { get; set; }
+        [JsonProperty("last")]
+        public string Last { get; set; }
+        [JsonProperty("age")]
+        public int Age { get; set; }
+        [JsonProperty("gender")]
+        public string Gender { get; set; }
+        [JsonProperty("age_group")]
+        public string AgeGroup { get; set; }
+        [JsonProperty("distance")]
+        public string Distance { get; set; }
+        [JsonProperty("seconds")]
         public int Seconds { get; set; }
-        [JsonPropertyName("milliseconds")]
+        [JsonProperty("milliseconds")]
         public int Milliseconds { get; set; }
-        [JsonPropertyName("chip_seconds")]
+        [JsonProperty("chip_seconds")]
         public int ChipSeconds { get; set; }
-        [JsonPropertyName("chip_milliseconds")]
+        [JsonProperty("chip_milliseconds")]
         public int ChipMilliseconds { get; set; }
-        [JsonPropertyName("segment")]
-        public string? Segment { get; set; }
-        [JsonPropertyName("location")]
-        public string? Location { get; set; }
-        [JsonPropertyName("occurence")]
-        public int? Occurence { get; set; }
-        [JsonPropertyName("ranking")]
-        public int? Ranking { get; set; }
-        [JsonPropertyName("age_ranking")]
-        public int? AgeRanking { get; set; }
-        [JsonPropertyName("gender_ranking")]
-        public int? GenderRanking { get; set; }
-        [JsonPropertyName("finish")]
-        public bool? Finish { get; set; }
-        [JsonPropertyName("type")]
-        public int? Type { get; set; }
+        [JsonProperty("segment")]
+        public string Segment { get; set; }
+        [JsonProperty("location")]
+        public string Location { get; set; }
+        [JsonProperty("occurence")]
+        public int Occurence { get; set; }
+        [JsonProperty("ranking")]
+        public int Ranking { get; set; }
+        [JsonProperty("age_ranking")]
+        public int AgeRanking { get; set; }
+        [JsonProperty("gender_ranking")]
+        public int GenderRanking { get; set; }
+        [JsonProperty("finish")]
+        public bool Finish { get; set; }
+        [JsonProperty("type")]
+        public int Type { get; set; }
 
-        public string ChipTime()
+        public string ChipTimeString
         {
-            return Constants.Timing.ToTime(ChipSeconds, ChipMilliseconds);
+            get => Constants.Timing.ToTime(ChipSeconds, ChipMilliseconds);
         }
 
-        public string Time()
+        public string TimeString
         {
-            return Constants.Timing.ToTime(Seconds, Milliseconds);
+            get => Constants.Timing.ToTime(Seconds, Milliseconds);
         }
 
-        public string TypeName()
+        public string TypeName
         {
-            switch (this.Type)
+            get => TypeConverter(this.Type);
+        }
+
+        public string TypeConverter(int type)
+        {
+            switch (type)
             {
-                case Constants.Timing.DISTANCE_TYPE_EARLY:
+                case Constants.Timing.RESULT_TYPE_DNF:
+                    return "DNF";
+                case Constants.Timing.RESULT_TYPE_DNS:
+                    return "DNS";
+                case Constants.Timing.RESULT_TYPE_EARLY:
                     return "Early";
-                case Constants.Timing.DISTANCE_TYPE_VIRTUAL:
+                case Constants.Timing.RESULT_TYPE_VIRTUAL:
                     return "Virtual";
-                case Constants.Timing.DISTANCE_TYPE_UNOFFICIAL:
+                case Constants.Timing.RESULT_TYPE_UNOFFICIAL:
                     return "Unofficial";
                 default:
                     return "";
