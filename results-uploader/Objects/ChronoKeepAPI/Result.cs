@@ -2,9 +2,9 @@
 
 namespace results_uploader.Objects.API
 {
-    public class APIResult
+    public class Result
     {
-        public APIResult(string bib, string first, string last, int age, string gender,
+        public Result(string bib, string first, string last, int age, string gender,
             string ageGroupName, string distance, int chipSeconds, int chipMilliseconds,
             string segment, string location, int occurrence, int place, int agePlace,
             int genderPlace, bool finish, int type, int seconds, int milliseconds)
@@ -68,5 +68,55 @@ namespace results_uploader.Objects.API
         public bool Finish { get; set; }
         [JsonProperty("type")]
         public int Type { get; set; }
+
+        public string ChipTimeString
+        {
+            get => Constants.Timing.ToTime(ChipSeconds, ChipMilliseconds);
+        }
+
+        public string TimeString
+        {
+            get => Constants.Timing.ToTime(Seconds, Milliseconds);
+        }
+
+        public string TypeName
+        {
+            get => TypeConverter(this.Type);
+        }
+
+        public string TypeConverter(int type)
+        {
+            switch (type)
+            {
+                case Constants.Timing.RESULT_TYPE_DNF:
+                    return "DNF";
+                case Constants.Timing.RESULT_TYPE_DNS:
+                    return "DNS";
+                case Constants.Timing.RESULT_TYPE_EARLY:
+                    return "Early";
+                case Constants.Timing.RESULT_TYPE_VIRTUAL:
+                    return "Virtual";
+                case Constants.Timing.RESULT_TYPE_UNOFFICIAL:
+                    return "Unofficial";
+                default:
+                    return "";
+            }
+        }
+
+        public static int CompareTo(Result one, Result two)
+        {
+            if (one.Seconds == two.Seconds)
+            {
+                return one.Milliseconds.CompareTo(two.Milliseconds);
+            }
+            return one.Seconds.CompareTo(two.Seconds);
+        }
+
+        public APIResult toAPIResult()
+        {
+            return new APIResult(Bib, First, Last, Age, Gender, AgeGroup, Distance,
+                ChipSeconds, ChipMilliseconds, Segment, Location, Occurence, Ranking,
+                AgeRanking, GenderRanking, Finish, Type, Seconds, Milliseconds);
+        }
     }
 }

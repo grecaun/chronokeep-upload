@@ -35,7 +35,6 @@ namespace results_uploader.UI
             "Distance",
             "Time",
             "Chip Time",
-            "Occurence",
             "Place",
             "Age Place",
             "Gender Place",
@@ -58,7 +57,7 @@ namespace results_uploader.UI
 
         IDataImporter importer;
         bool init = true;
-        List<APIResult> results = new List<APIResult>();
+        List<Result> results = new List<Result>();
         MainWindow mainWindow;
 
         public ImportWindow(IDataImporter importer, MainWindow mainWindow)
@@ -252,8 +251,27 @@ namespace results_uploader.UI
                 {
                     type = Constants.Timing.RESULT_TYPE_DNS;
                 }
-                results.Add(new APIResult(
-                    data.Data[counter][keys[BIB]],                      // BIB
+                int rank = keys[RANKING] == 0 ? 0 : int.Parse(data.Data[counter][keys[RANKING]]);
+                int ageRank = keys[AGERANKING] == 0 ? 0 : int.Parse(data.Data[counter][keys[AGERANKING]]);
+                int genderRank = keys[GENDERRANKING] == 0 ? 0 : int.Parse(data.Data[counter][keys[AGERANKING]]);
+                string bib = data.Data[counter][keys[BIB]] == null ? "" : data.Data[counter][keys[BIB]];
+                if (data.Data[counter][keys[FIRST]] == null)
+                {
+                    MessageBox.Show("First name not set.");
+                    return;
+                }
+                if (data.Data[counter][keys[LAST]] == null)
+                {
+                    MessageBox.Show("Last name not set.");
+                    return;
+                }
+                if (data.Data[counter][keys[DISTANCE]] == null)
+                {
+                    MessageBox.Show("Distance not set.");
+                    return;
+                }
+                results.Add(new Result(
+                    bib,                                                // BIB
                     data.Data[counter][keys[FIRST]],                    // FIRST
                     data.Data[counter][keys[LAST]],                     // LAST
                     age,                                                // AGE
@@ -265,9 +283,9 @@ namespace results_uploader.UI
                     "Finish",                                           // SEGMENT
                     "Finish",                                           // LOCATION
                     1,                                                  // OCCURRENCE
-                    int.Parse(data.Data[counter][keys[RANKING]]),       // PLACE
-                    int.Parse(data.Data[counter][keys[AGERANKING]]),    // AGEPLACE
-                    int.Parse(data.Data[counter][keys[GENDERRANKING]]), // GENDERPLACE
+                    rank,                                               // PLACE
+                    ageRank,                                            // AGEPLACE
+                    genderRank,                                         // GENDERPLACE
                     true,                                               // FINISH
                     type,                                               // TYPE
                     seconds,                                            // SECONDS

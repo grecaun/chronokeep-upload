@@ -78,6 +78,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Objects\ChronoKeepAPI\Result.cs" />
     <Compile Include="UI\APIWindow.xaml.cs">
       <DependentUpon>APIWindow.xaml</DependentUpon>
     </Compile>

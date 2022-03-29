@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,7 +43,11 @@ namespace results_uploader
         
         private GetEventsResponse events;
         private GetEventYearsResponse eventYears;
-        private List<APIResult> results = new List<APIResult>();
+        private List<Result> results = new List<Result>();
+
+        private Regex ageGroupRegex = new Regex(@"[^\d]*(?<start>\d{1,2})[^\d]{0,2}(?<end>\d{1,2})");
+
+        private readonly int UploadCount = 20;
 
         public MainWindow()
         {
@@ -142,7 +147,7 @@ namespace results_uploader
                 });
                 if (response != null && response.EventYear != null)
                 {
-                    year = response.EventYear.Year;
+                    this.year = response.EventYear.Year;
                 }
             }
             catch (APIException ex)
@@ -150,7 +155,7 @@ namespace results_uploader
                 MessageBox.Show(ex.Message);
                 return;
             }
-            UpdateYears(year);
+            UpdateYears(this.year);
         }
 
         private void UpdateView()
@@ -208,7 +213,7 @@ namespace results_uploader
             }
         }
 
-        public void ImportFinalize(List<APIResult> results)
+        public void ImportFinalize(List<Result> results)
         {
             Log.D("Main Window", "Import finalized. Results count: " + results.Count);
             this.results = results;
@@ -222,16 +227,172 @@ namespace results_uploader
             }
         }
 
-        private void Upload_Click(object sender, RoutedEventArgs e)
+        private async void Upload_Click(object sender, RoutedEventArgs e)
         {
             Log.D("MainWindow", "Upload clicked.");
+            if (api == null || slug == null || year == null)
+            {
+                MessageBox.Show("Something went wrong and one or more variables is not set properly. Upload failed.");
+                return;
+            }
             if (results.Count > 0)
             {
-                // do stuff
+                bool ageGroups = false;
+                bool calcRankings = false;
+                bool setBibs = false;
+                Dictionary<int, string> ageGroupDict = new Dictionary<int, string>();
+                // figure out what the age groups are
+                // if unable to figure out what they are, specify them as 10 year increments
+                foreach (Result result in results)
+                {
+                    // If age groups aren't set when uploaded, then we can set age groups.
+                    if (result.AgeGroup == null || result.AgeGroup.Length < 1)
+                    {
+                        Log.D("MainWindow","Age Groups not set.");
+                        ageGroups = true;
+                    }
+                    else
+                    {
+                        GroupCollection groups = ageGroupRegex.Match(result.AgeGroup).Groups;
+                        int start = -1;
+                        int end = -1;
+                        if (int.TryParse(groups[start].Value, out start) && int.TryParse(groups[end].Value, out end))
+                        {
+                            for (int i = start; i <= end; i++)
+                            {
+                                ageGroupDict[i] = result.AgeGroup;
+                            }
+                        }
+                    }
+                    // If there is a ranking that is less than 1, and its not a DNF or DNS entry, then we need to calculate rankings
+                    if (result.Ranking < 1 && result.Type != Constants.Timing.RESULT_TYPE_DNF && result.Type != Constants.Timing.RESULT_TYPE_DNS)
+                    {
+                        Log.D("MainWindow", "Rankings not set.");
+                        calcRankings = true;
+                    }
+                    if (result.Bib == null || result.Bib.Length < 1)
+                    {
+                        Log.D("MainWindow", "Bibs need to be set.");
+                        setBibs = true;
+                    }
+                }
+                if (calcRankings && ageGroups)
+                {
+                    Log.D("MainWindow", "Creating default age groups.");
+                    foreach ((int start, int end) in DefaultAgeGroups())
+                    {
+                        for (int i = start; i <= end; i++)
+                        {
+                            ageGroupDict[i] = string.Format("{0}-{1}", start, end);
+                        }
+                    }
+                }
+                // calculate age group places and places if necessary
+                if (calcRankings)
+                {
+                    Log.D("MainWindow", "Calculating rankings.");
+                    // (dist, gender, age)
+                    Dictionary<(string, string, string), int> ageRankDict = new Dictionary<(string, string, string), int>();
+                    // (dist, gender)
+                    Dictionary<(string, string), int> genderDict = new Dictionary<(string, string), int>();
+                    // dist
+                    Dictionary<string, int> currentRank = new Dictionary<string, int>();
+                    results.Sort(Result.CompareTo);
+                    foreach (Result result in results)
+                    {
+                        // only set ranking if its a finish time and not dnf/dns
+                        if (result.Finish && result.Type != Constants.Timing.RESULT_TYPE_DNS && result.Type != Constants.Timing.RESULT_TYPE_DNF)
+                        {
+                            if (!currentRank.ContainsKey(result.Distance))
+                            {
+                                currentRank[result.Distance] = 1;
+                            }
+                            result.Ranking = currentRank[result.Distance];
+                            if (!genderDict.ContainsKey((result.Distance, result.Gender)))
+                            {
+                                genderDict[(result.Distance, result.Gender)] = 1;
+                            }
+                            result.GenderRanking = genderDict[(result.Distance, result.Gender)];
+                            if (!ageGroupDict.ContainsKey(result.Age))
+                            {
+                                ageGroupDict.Add(result.Age, "0-100");
+                            }
+                            result.AgeGroup = ageGroupDict[result.Age];
+                            if (!ageRankDict.ContainsKey((result.Distance, result.Gender, ageGroupDict[result.Age])))
+                            {
+                                ageRankDict[(result.Distance, result.Gender, ageGroupDict[result.Age])] = 1;
+                            }
+                            result.AgeRanking = ageRankDict[(result.Distance, result.Gender, ageGroupDict[result.Age])];
+                            // update rankings for the next result
+                            currentRank[result.Distance] = result.Ranking + 1;
+                            genderDict[(result.Distance, result.Gender)] = result.GenderRanking + 1;
+                            ageRankDict[(result.Distance, result.Gender, ageGroupDict[result.Age])] = result.AgeRanking + 1;
+                        }
+                    }
+                }
+                // Set bibs for people if necessary
+                if (setBibs)
+                {
+                    int bib = 1;
+                    foreach (Result res in results)
+                    {
+                        if (res.Bib == null || res.Bib.Length < 1)
+                        {
+                            res.Bib = bib.ToString();
+                            bib++;
+                        }
+                    }
+                }
+                // then upload in batches of UploadCount
+                Log.D("MainWindow", "Uploading.");
+                int leftovers = results.Count % UploadCount;
+                for (int i = 0; i < results.Count - leftovers; i += UploadCount)
+                {
+                    try
+                    {
+                        List<APIResult> toUpload = new List<APIResult>();
+                        foreach (Result res in results.GetRange(i, UploadCount))
+                        {
+                            toUpload.Add(res.toAPIResult());
+                        }
+                        AddResultsResponse response = await APIHandlers.UploadResults(api, slug, year, toUpload);
+                        Log.D("MainWindow", "Response received.");
+                        if (response.Count != UploadCount)
+                        {
+                            MessageBox.Show(string.Format("Something went wrong. {0} were uploaded when {1} were expected.", response.Count, UploadCount));
+                        }
+                    }
+                    catch (APIException excep)
+                    {
+                        MessageBox.Show(excep.Message);
+                        return;
+                    }
+                 }
+                try
+                {
+                    List<APIResult> toUpload = new List<APIResult>();
+                    foreach (Result res in results.GetRange(results.Count - leftovers, leftovers))
+                    {
+                        toUpload.Add(res.toAPIResult());
+                    }
+                    AddResultsResponse response = await APIHandlers.UploadResults(api, slug, year, toUpload);
+                    if (response.Count != leftovers)
+                    {
+                        MessageBox.Show(string.Format("Something went wrong. {0} were uploaded when {1} were expected.", response.Count, leftovers));
+                    }
+                }
+                catch(APIException excep)
+                {
+                    MessageBox.Show(excep.Message);
+                    return;
+                }
+                MessageBox.Show("Upload complete.");
+                results.Clear();
+                updateListView.Items.Refresh();
             }
             else
             {
-                
+                MessageBox.Show("Nothing to upload.");
             }
         }
 
@@ -255,6 +416,20 @@ namespace results_uploader
             }
         }
 
+        private (int, int)[] DefaultAgeGroups()
+        {
+            (int, int)[] output = { };
+            output.Append((0, 19));
+            output.Append((20, 29));
+            output.Append((30, 39));
+            output.Append((40, 49));
+            output.Append((50, 59));
+            output.Append((60, 69));
+            output.Append((70, 70));
+            output.Append((80, 100));
+            return output;
+        }
+
         private void YearBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Log.D("MainWindow", "Year changed.");
@@ -267,6 +442,10 @@ namespace results_uploader
             {
                 eventYearWindow = new EventYearWindow(this, "YEAR");
                 eventYearWindow.Show();
+            }
+            else if (uid != "-1")
+            {
+                year = uid;
             }
         }
 
